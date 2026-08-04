@@ -3,296 +3,358 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Catálogo de Tours Virtuais</title>
-    <!-- Fonte e Ícones -->
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;500;700&display=swap" rel="stylesheet">
+    <title>Catálogo de Tours Virtuais | Red Wolf Brazil</title>
+    <!-- Fontes Inspiradas no Padrão Vercel (Inter/Geist substitute) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- html2pdf.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
     <style>
-        /* 
-           PALETA DE CORES ATUALIZADA
-        */
         :root {
-            --cor-primaria: #F4C714; /* Amarelo/Dourado - Destaques, botões e valores */
-            --cor-secundaria: #0A0725; /* Fundo escuro */
-            --cor-texto: #FFFFFF; /* Branco */
-            --cor-fundo-card: rgba(255, 255, 255, 0.05); /* Fundo dos cards translúcido */
-            --cor-destaque: #036D35; /* Verde - Bordas secundárias e abas inativas */
+            --cor-fundo: #0A0725; 
+            --cor-primaria: #F4C714; /* Destaques, hover, valores */
+            --cor-secundaria: #036D35; /* Sucesso, marcações, degradês sutis */
+            --cor-texto: #FFFFFF;
+            --cor-texto-mutado: #A0A0A0;
+            --borda-sutil: rgba(255, 255, 255, 0.1);
+            --borda-hover: rgba(244, 199, 20, 0.5);
+            --fundo-card: rgba(255, 255, 255, 0.02);
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Montserrat', sans-serif; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         
-        body { background-color: var(--cor-secundaria); color: var(--cor-texto); line-height: 1.6; }
+        body { background-color: var(--cor-fundo); color: var(--cor-texto); line-height: 1.6; overflow-x: hidden; }
 
-        /* Top Menu & Header */
-        nav { display: flex; justify-content: space-between; padding: 20px 50px; background: rgba(10, 7, 37, 0.9); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 100; border-bottom: 1px solid rgba(244, 199, 20, 0.2); }
-        .logo { font-size: 24px; font-weight: 700; color: var(--cor-primaria); display: flex; align-items: center; gap: 10px; }
-        .icon-360 { width: 30px; height: 30px; border: 2px solid var(--cor-primaria); border-radius: 50%; position: relative; }
-        .icon-360::before { content: ''; position: absolute; top: 50%; left: 0; right: 0; height: 2px; background: var(--cor-primaria); transform: translateY(-50%) rotate(45deg); }
+        /* Background Glow (Vercel Style) */
+        .bg-glow { position: fixed; top: -20%; left: 50%; transform: translateX(-50%); width: 80vw; height: 80vh; background: radial-gradient(circle, rgba(3, 109, 53, 0.15) 0%, rgba(10, 7, 37, 0) 70%); z-index: -1; pointer-events: none; filter: blur(80px); }
+
+        /* Navbar - Frosted Glass */
+        nav { display: flex; justify-content: space-between; align-items: center; padding: 15px 5%; background: rgba(10, 7, 37, 0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--borda-sutil); transition: all 0.3s ease; }
+        .logo { font-size: 20px; font-weight: 700; color: var(--cor-texto); display: flex; align-items: center; gap: 10px; letter-spacing: -0.5px; }
+        .logo span { color: var(--cor-primaria); }
+        .icon-360 { width: 24px; height: 24px; border: 2px solid var(--cor-primaria); border-radius: 50%; position: relative; }
         
-        /* Hero & 360 Tour Frame */
-        header { text-align: center; padding: 60px 20px 20px; }
-        h1 { font-size: 2.5rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 20px; }
-        .tour-container { max-width: 1200px; margin: 0 auto 40px; height: 600px; border: 2px solid var(--cor-primaria); border-radius: 10px; overflow: hidden; position: relative; box-shadow: 0 0 30px rgba(244, 199, 20, 0.15); }
-        iframe { width: 100%; height: 100%; border: none; }
+        /* Typography & Layout */
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+        header { text-align: center; padding: 100px 20px 60px; }
+        h1 { font-size: 4rem; font-weight: 700; letter-spacing: -2px; margin-bottom: 20px; line-height: 1.1; background: linear-gradient(180deg, #FFF 0%, rgba(255,255,255,0.7) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .subtitle { font-size: 1.2rem; color: var(--cor-texto-mutado); max-width: 600px; margin: 0 auto; font-weight: 400; }
+        h2 { font-size: 2rem; font-weight: 600; letter-spacing: -1px; margin-bottom: 40px; }
 
-        /* Sections */
-        .section-container { max-width: 1200px; margin: 40px auto; padding: 0 20px; }
-        h2 { color: var(--cor-primaria); border-bottom: 2px solid var(--cor-destaque); padding-bottom: 10px; margin-bottom: 30px; }
+        /* Animations (Scroll Reveal) */
+        .reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.8s cubic-bezier(0.5, 0, 0, 1), transform 0.8s cubic-bezier(0.5, 0, 0, 1); }
+        .reveal.active { opacity: 1; transform: translateY(0); }
 
-        /* Process Grid */
-        .process-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin-bottom: 40px; }
-        .process-card { background: var(--cor-fundo-card); padding: 30px; border-radius: 8px; border-left: 4px solid var(--cor-primaria); transition: transform 0.3s; border-right: 1px solid rgba(255,255,255,0.05); border-top: 1px solid rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .process-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
-        .process-card h3 { margin-bottom: 15px; color: var(--cor-primaria); }
+        /* Tour iframe container */
+        .tour-wrapper { width: 100%; border-radius: 12px; overflow: hidden; border: 1px solid var(--borda-sutil); box-shadow: 0 20px 40px rgba(0,0,0,0.5); transition: border-color 0.3s ease; background: #000; margin-bottom: 80px; }
+        .tour-wrapper:hover { border-color: var(--borda-hover); }
+        iframe { width: 100%; border: none; display: block; }
+        .tour-main { height: 650px; }
+        .tour-micro { height: 400px; margin-bottom: 30px; }
 
-        /* Tabs */
-        .tabs { display: flex; gap: 15px; margin-bottom: 30px; justify-content: center; flex-wrap: wrap; }
-        .tab-btn { background: var(--cor-destaque); color: var(--cor-texto); border: none; padding: 15px 30px; cursor: pointer; border-radius: 5px; font-weight: 600; font-size: 16px; transition: 0.3s; }
-        .tab-btn.active, .tab-btn:hover { background: var(--cor-primaria); color: var(--cor-secundaria); }
-        .tab-content { display: none; background: var(--cor-fundo-card); padding: 40px; border-radius: 8px; border: 1px solid rgba(244, 199, 20, 0.2); }
-        .tab-content.active { display: block; }
+        /* Spotlight Cards (Mouse Tracking) */
+        .spotlight { position: relative; background: var(--fundo-card); border: 1px solid var(--borda-sutil); border-radius: 12px; padding: 30px; overflow: hidden; transition: border-color 0.3s ease, transform 0.3s ease; }
+        .spotlight::before { content: ""; position: absolute; top: var(--mouse-y, 0); left: var(--mouse-x, 0); transform: translate(-50%, -50%); width: 400px; height: 400px; background: radial-gradient(circle, rgba(244, 199, 20, 0.1) 0%, transparent 60%); opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 0; }
+        .spotlight:hover::before { opacity: 1; }
+        .spotlight:hover { border-color: var(--borda-hover); transform: translateY(-2px); }
+        .spotlight > * { position: relative; z-index: 1; } /* Mantém conteúdo acima do brilho */
 
-        /* Forms & Inputs */
-        .form-group { margin-bottom: 25px; }
-        label { display: block; margin-bottom: 10px; font-weight: 500; }
-        input[type="number"] { width: 100%; max-width: 200px; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid var(--cor-primaria); color: #fff; border-radius: 4px; font-size: 16px; outline: none; }
-        .checkbox-group { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 5px; border-left: 3px solid var(--cor-destaque); transition: 0.3s; }
-        .checkbox-group:hover { border-left-color: var(--cor-primaria); background: rgba(0,0,0,0.5); }
-        .checkbox-group input { width: 20px; height: 20px; accent-color: var(--cor-primaria); }
+        .process-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; margin-bottom: 80px; }
+        .spotlight h3 { font-size: 1.25rem; color: var(--cor-texto); margin-bottom: 12px; font-weight: 500; display: flex; align-items: center; gap: 10px; }
+        .spotlight h3::before { content: ""; display: block; width: 8px; height: 8px; border-radius: 50%; background: var(--cor-secundaria); }
+        .spotlight p { color: var(--cor-texto-mutado); font-size: 0.95rem; }
 
-        select { width: 100%; padding: 12px; background: rgba(255,255,255,0.1); border: 1px solid var(--cor-primaria); color: #fff; border-radius: 4px; margin-bottom: 20px; outline: none; font-size: 16px; }
-        select option { background: var(--cor-secundaria); color: #fff; }
+        /* Segmented Control (Tabs Vercel Style) */
+        .tabs-wrapper { display: flex; justify-content: center; margin-bottom: 40px; }
+        .tabs { display: inline-flex; background: rgba(255,255,255,0.05); padding: 5px; border-radius: 8px; border: 1px solid var(--borda-sutil); }
+        .tab-btn { background: transparent; color: var(--cor-texto-mutado); border: none; padding: 12px 24px; cursor: pointer; border-radius: 6px; font-weight: 500; font-size: 0.95rem; transition: all 0.2s ease; }
+        .tab-btn:hover { color: var(--cor-texto); }
+        .tab-btn.active { background: var(--cor-secundaria); color: var(--cor-texto); box-shadow: 0 4px 12px rgba(3, 109, 53, 0.3); }
+        
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Export Section */
-        .export-section { text-align: center; margin: 60px 0; }
-        .btn-export { background: var(--cor-primaria); color: var(--cor-secundaria); font-size: 18px; font-weight: 700; padding: 15px 40px; border: none; border-radius: 30px; cursor: pointer; text-transform: uppercase; box-shadow: 0 0 20px rgba(244, 199, 20, 0.3); transition: 0.3s; }
-        .btn-export:hover { box-shadow: 0 0 30px rgba(244, 199, 20, 0.6); transform: scale(1.05); }
+        /* Forms & Inputs (Modern UI) */
+        .form-group { margin-bottom: 24px; }
+        label { display: block; margin-bottom: 8px; font-weight: 500; font-size: 0.9rem; color: var(--cor-texto); }
+        .input-hint { font-size: 0.8rem; color: var(--cor-texto-mutado); margin-top: 4px; }
+        
+        input[type="number"], select { width: 100%; max-width: 300px; padding: 12px 16px; background: rgba(0,0,0,0.2); border: 1px solid var(--borda-sutil); color: #fff; border-radius: 8px; font-size: 1rem; outline: none; transition: all 0.2s; }
+        input[type="number"]:focus, select:focus { border-color: var(--cor-primaria); box-shadow: 0 0 0 3px rgba(244, 199, 20, 0.1); }
+        select option { background: var(--cor-fundo); color: #fff; }
 
-        /* Visually Hidden Div specifically for PDF generation (A4 format) */
+        .checkbox-group { display: flex; align-items: flex-start; gap: 12px; padding: 16px; background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid var(--borda-sutil); transition: all 0.2s ease; cursor: pointer; margin-bottom: 12px; }
+        .checkbox-group:hover { border-color: var(--cor-secundaria); background: rgba(3, 109, 53, 0.05); }
+        .checkbox-group input { margin-top: 4px; width: 18px; height: 18px; accent-color: var(--cor-primaria); cursor: pointer; }
+        .checkbox-group label { margin-bottom: 0; cursor: pointer; font-size: 0.95rem; }
+
+        /* Total & Export */
+        .total-display { text-align: right; margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--borda-sutil); }
+        .total-display span { font-size: 3rem; font-weight: 700; color: var(--cor-primaria); letter-spacing: -1px; display: block; }
+        
+        .export-section { text-align: center; margin: 80px 0; }
+        .btn-export { background: var(--cor-texto); color: var(--cor-fundo); font-size: 1rem; font-weight: 600; padding: 16px 32px; border: none; border-radius: 8px; cursor: pointer; transition: all 0.2s ease; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-export:hover { background: var(--cor-primaria); transform: translateY(-2px); box-shadow: 0 10px 20px rgba(244, 199, 20, 0.2); }
+
+        /* PDF Render Wrapper (Hidden) */
         #pdf-wrapper { display: none; }
-        
-        /* The styling inside this container applies ONLY to the PDF */
-        #proposta-pdf { background: #ffffff; color: #333333; padding: 40px; font-family: 'Helvetica', Arial, sans-serif; width: 100%; box-sizing: border-box; }
-        #proposta-pdf .pdf-header { text-align: center; border-bottom: 2px solid #0A0725; padding-bottom: 20px; margin-bottom: 30px; }
-        #proposta-pdf .pdf-title { font-size: 24px; font-weight: bold; text-transform: uppercase; color: #0A0725; }
-        #proposta-pdf .pdf-meta { font-size: 12px; color: #666; margin-top: 10px; }
-        #proposta-pdf .pdf-section { margin-bottom: 25px; }
-        #proposta-pdf .pdf-section h3 { font-size: 16px; color: #036D35; border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-bottom: 10px; }
-        #proposta-pdf table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        #proposta-pdf th, #proposta-pdf td { border: 1px solid #ddd; padding: 12px; text-align: left; font-size: 14px; }
-        #proposta-pdf th { background: #f5f5f5; color: #0A0725; }
-        #proposta-pdf .total-row { font-weight: bold; background: #e9ecef; font-size: 16px; }
-        #proposta-pdf .footer-pdf { margin-top: 50px; font-size: 10px; text-align: center; color: #777; border-top: 1px solid #ddd; padding-top: 20px; }
+        #proposta-pdf { background: #ffffff; color: #111; padding: 40px; font-family: 'Inter', sans-serif; width: 100%; }
+        #proposta-pdf .pdf-header { text-align: left; border-bottom: 2px solid #0A0725; padding-bottom: 20px; margin-bottom: 30px; }
+        #proposta-pdf .pdf-title { font-size: 20px; font-weight: 700; color: #0A0725; }
+        #proposta-pdf .pdf-meta { font-size: 11px; color: #666; margin-top: 5px; }
+        #proposta-pdf h3 { font-size: 14px; color: #036D35; margin-bottom: 10px; margin-top: 20px; text-transform: uppercase; letter-spacing: 1px; }
+        #proposta-pdf table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        #proposta-pdf th, #proposta-pdf td { border: 1px solid #ddd; padding: 10px; text-align: left; font-size: 12px; }
+        #proposta-pdf th { background: #f5f5f5; color: #0A0725; font-weight: 600; }
+        #proposta-pdf .total-row { font-weight: 700; background: #e9ecef; font-size: 14px; }
+        #proposta-pdf .footer-pdf { margin-top: 40px; font-size: 10px; text-align: center; color: #777; border-top: 1px solid #ddd; padding-top: 15px; }
     </style>
 </head>
 <body>
 
+    <div class="bg-glow"></div>
+
     <nav>
         <div class="logo">
             <div class="icon-360"></div>
-            RED WOLF BRAZIL
+            RED WOLF <span>BRAZIL</span>
         </div>
     </nav>
 
-    <header>
-        <h1>Catálogo de Tours Virtuais</h1>
-        <p>Experiência imersiva e mapeamento em 360°</p>
+    <header class="reveal">
+        <div class="container">
+            <h1>O Mundo em 360°</h1>
+            <p class="subtitle">Orce e estruture experiências imersivas, navegação virtual de alta definição e captação inteligente.</p>
+        </div>
     </header>
 
-    <div class="section-container">
+    <main class="container">
         <!-- Tour Virtual Principal -->
-        <div class="tour-container">
+        <div class="tour-wrapper tour-main reveal">
             <iframe src="https://tourmkr.com/F1mEIyOQC0" title="Tour Virtual Principal" allowfullscreen loading="lazy"></iframe>
         </div>
-    </div>
 
-    <div class="section-container">
-        <h2>Metodologia e Processo de Produção</h2>
-        <p style="margin-bottom: 20px;">Prazo estimado: <strong>60 dias totais</strong> para conclusão (demanda base). Este prazo baliza o orçamento mínimo de estruturação.</p>
-        
-        <div class="process-grid">
-            <div class="process-card">
-                <h3>1. Planejamento</h3>
-                <p>Descoberta detalhada dos pontos de inclusão e tipos de materiais necessários. Criamos um mapa de execução cronológico e ágil, otimizando o roteiro para locações próximas.</p>
-            </div>
-            <div class="process-card">
-                <h3>2. Captação</h3>
-                <p>Captação presencial em todos os locais. <strong>Requisito:</strong> Acompanhamento obrigatório de um servidor da prefeitura ou contratante para garantir acesso e evitar recaptações por falhas de organização.</p>
-            </div>
-            <div class="process-card">
-                <h3>3. Pós-Produção</h3>
-                <p>Edição rigorosa de todo o material captado, montagem e desenvolvimento do tour virtual dentro da plataforma. Otimização final para apresentação e postagem no prazo estipulado.</p>
-            </div>
-        </div>
-    </div>
-
-    <div class="section-container">
-        <h2>Simulador de Orçamento Interativo</h2>
-        
-        <div class="tabs">
-            <button class="tab-btn active" onclick="openTab(event, 'macro')">Contrato Principal (Prefeituras/Redes)</button>
-            <button class="tab-btn" onclick="openTab(event, 'micro')">Empresas Avulsas (Patrocínio/Ficha)</button>
-        </div>
-
-        <!-- ABA 1: CONTRATO MACRO -->
-        <div id="macro" class="tab-content active">
-            <div class="form-group">
-                <label>Quantidade de Locais (Mínimo 20 locais - Pacote Base)</label>
-                <input type="number" id="qtdLocais" min="20" value="20" oninput="calcularTotal()">
-                <p style="font-size: 13px; color: #aaa; margin-top: 5px;">*Acima de 20 locais, acréscimo de R$ 1.800,00 por local adicional. Estrutura ativa por 1 ano.</p>
-            </div>
-
-            <div class="form-group">
-                <label>Serviços Adicionais por Local:</label>
-                <div class="checkbox-group">
-                    <input type="checkbox" id="addPostagem" onchange="calcularTotal()">
-                    <label for="addPostagem">Postagem do tour virtual individual nas fichas do Google (R$ 600/local)</label>
+        <!-- Metodologia -->
+        <section class="reveal">
+            <h2>Metodologia de Execução</h2>
+            <div class="process-grid">
+                <div class="spotlight process-card">
+                    <h3>Planejamento</h3>
+                    <p>Mapeamento de pontos de inclusão e roteiro logístico otimizado. Baliza o prazo base de 60 dias para demandas iniciais, garantindo fluidez.</p>
                 </div>
-                <div class="checkbox-group">
-                    <input type="checkbox" id="addOtimizacao" onchange="calcularTotal()">
-                    <label for="addOtimizacao">Edição e Otimização de ficha cadastral Google* (R$ 300/local) <br><small>*Sujeito à aprovação da plataforma Google</small></label>
+                <div class="spotlight process-card">
+                    <h3>Captação</h3>
+                    <p>Captação presencial de alta definição. Exige acompanhamento obrigatório do contratante local para assegurar acessos e eliminar retrabalhos.</p>
                 </div>
-                <div class="checkbox-group">
-                    <input type="checkbox" id="addMaterial" onchange="calcularTotal()">
-                    <label for="addMaterial">Produção de Material Fotográfico e Vídeo (R$ 1.500/local)</label>
+                <div class="spotlight process-card">
+                    <h3>Pós-Produção</h3>
+                    <p>Edição rigorosa do material, montagem da arquitetura do tour na plataforma, testes de navegação e publicação nos ecossistemas do Google.</p>
                 </div>
             </div>
+        </section>
 
-            <div class="form-group">
-                <label>Serviços Globais e Estruturais:</label>
-                <div class="checkbox-group">
-                    <input type="checkbox" id="addOffline" onchange="calcularTotal()">
-                    <label for="addOffline">Criação de Tour Offline nos servidores da Contratante (Pagamento único, sem renovação - R$ 3.500)</label>
-                </div>
-            </div>
-
-            <h3 style="text-align: right; margin-top: 30px; font-size: 28px;">Total Mensurado: <span id="valorTotalMacro" style="color: var(--cor-primaria);">R$ 35.000,00</span></h3>
-        </div>
-
-        <!-- ABA 2: EMPRESAS PARCEIRAS -->
-        <div id="micro" class="tab-content">
+        <!-- Calculadora -->
+        <section class="reveal">
+            <h2>Monte o seu Escopo</h2>
             
-            <!-- Tour Virtual para aba Empresas -->
-            <div class="tour-container" style="height: 450px; margin-bottom: 40px; border-color: var(--cor-destaque); box-shadow: 0 0 20px rgba(3, 109, 53, 0.2);">
-                <iframe src="https://tourmkr.com/F1mEIyOQC0/47733290p&72.69h&68.45t" title="Tour Virtual Empresas" allowfullscreen loading="lazy"></iframe>
+            <div class="tabs-wrapper">
+                <div class="tabs">
+                    <button class="tab-btn active" onclick="openTab(event, 'macro')">Contrato Principal (Prefeituras)</button>
+                    <button class="tab-btn" onclick="openTab(event, 'micro')">Empresas Avulsas</button>
+                </div>
             </div>
 
-            <div class="form-group">
-                <label>Porte da Empresa / Tamanho do Tour</label>
-                <select id="porteEmpresa" onchange="calcularTotal()">
-                    <option value="pequena">Pequena (Até 4 fotos) - Tour Base + Google: R$ 1.200</option>
-                    <option value="media">Média (Até 20 fotos) - Tour Base + Google: R$ 1.800</option>
-                    <option value="grande">Grande (Acima de 21 fotos) - Tour Base + Google: R$ 2.500</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Serviços Adicionais:</label>
-                <div class="checkbox-group">
-                    <input type="checkbox" id="empOtimizacao" onchange="calcularTotal()">
-                    <label for="empOtimizacao">Otimização de Ficha Cadastral (R$ 300)</label>
+            <!-- ABA 1: CONTRATO MACRO -->
+            <div id="macro" class="tab-content active spotlight">
+                <div class="form-group">
+                    <label>Quantidade de Locais (Pacote Base: 20)</label>
+                    <input type="number" id="qtdLocais" min="20" value="20" oninput="calcularTotal()">
+                    <div class="input-hint">Acima de 20 locais, acréscimo de R$ 1.800,00 por unidade. Validade estrutural de 1 ano.</div>
                 </div>
-                <div class="checkbox-group">
-                    <input type="checkbox" id="empMaterial" onchange="calcularTotal()">
-                    <label for="empMaterial">Produção de Fotografia e Vídeo (Valores variam por porte)</label>
+
+                <div class="form-group" style="margin-top: 30px;">
+                    <label>Adicionais por Local:</label>
+                    <label class="checkbox-group">
+                        <input type="checkbox" id="addPostagem" onchange="calcularTotal()">
+                        <div>
+                            <span>Postagem nas Fichas do Google</span>
+                            <div class="input-hint">+ R$ 600,00 por local</div>
+                        </div>
+                    </label>
+                    <label class="checkbox-group">
+                        <input type="checkbox" id="addOtimizacao" onchange="calcularTotal()">
+                        <div>
+                            <span>Edição e Otimização de Ficha Google</span>
+                            <div class="input-hint">+ R$ 300,00 por local (Sujeito à aprovação do Google)</div>
+                        </div>
+                    </label>
+                    <label class="checkbox-group">
+                        <input type="checkbox" id="addMaterial" onchange="calcularTotal()">
+                        <div>
+                            <span>Produção de Material Fotográfico e Vídeo</span>
+                            <div class="input-hint">+ R$ 1.500,00 por local</div>
+                        </div>
+                    </label>
+                </div>
+
+                <div class="form-group">
+                    <label>Serviços Globais:</label>
+                    <label class="checkbox-group">
+                        <input type="checkbox" id="addOffline" onchange="calcularTotal()">
+                        <div>
+                            <span>Tour Interativo Offline (Servidores Próprios)</span>
+                            <div class="input-hint">Pagamento único de R$ 3.500,00 (Não exige renovação)</div>
+                        </div>
+                    </label>
+                </div>
+
+                <div class="total-display">
+                    Investimento Estimado
+                    <span id="valorTotalMacro">R$ 35.000,00</span>
                 </div>
             </div>
-            
-            <h3 style="text-align: right; margin-top: 30px; font-size: 28px;">Total Mensurado: <span id="valorTotalMicro" style="color: var(--cor-primaria);">R$ 1.200,00</span></h3>
+
+            <!-- ABA 2: EMPRESAS PARCEIRAS -->
+            <div id="micro" class="tab-content spotlight">
+                <!-- Tour Micro Embutido -->
+                <div class="tour-wrapper tour-micro">
+                    <iframe src="https://tourmkr.com/F1mEIyOQC0/47733290p&72.69h&68.45t" title="Tour Virtual Empresas" allowfullscreen loading="lazy"></iframe>
+                </div>
+
+                <div class="form-group">
+                    <label>Porte da Empresa / Complexidade</label>
+                    <select id="porteEmpresa" onchange="calcularTotal()">
+                        <option value="pequena">Pequena (Até 4 fotos) - R$ 1.200,00</option>
+                        <option value="media">Média (Até 20 fotos) - R$ 1.800,00</option>
+                        <option value="grande">Grande (Acima de 21 fotos) - R$ 2.500,00</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Módulos Adicionais:</label>
+                    <label class="checkbox-group">
+                        <input type="checkbox" id="empOtimizacao" onchange="calcularTotal()">
+                        <div>
+                            <span>Otimização de Ficha Cadastral</span>
+                            <div class="input-hint">+ R$ 300,00</div>
+                        </div>
+                    </label>
+                    <label class="checkbox-group">
+                        <input type="checkbox" id="empMaterial" onchange="calcularTotal()">
+                        <div>
+                            <span>Produção de Fotografia e Vídeo</span>
+                            <div class="input-hint">Variável conforme porte (R$ 1.500 a R$ 2.500)</div>
+                        </div>
+                    </label>
+                </div>
+                
+                <div class="total-display">
+                    Investimento Estimado
+                    <span id="valorTotalMicro">R$ 1.200,00</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="reveal spotlight" style="margin-top: 40px;">
+            <h3>Condições Comerciais</h3>
+            <p style="color: var(--cor-texto-mutado); font-size: 0.95rem; margin-top: 10px;">
+                O pagamento é firmado no ato da assinatura. Aceitamos <strong>PIX, Boleto à vista ou parcelamento em até 12x sem juros</strong> no cartão de crédito. Projetos de grande porte possuem opção de parcelamento direto via boleto, sujeito à análise de crédito.
+            </p>
+        </section>
+
+        <div class="export-section reveal">
+            <button class="btn-export" onclick="gerarPDF()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                Gerar Proposta Oficial
+            </button>
         </div>
-    </div>
+    </main>
 
-    <div class="section-container" style="background: rgba(255,255,255,0.05); padding: 30px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);">
-        <h3 style="color: var(--cor-primaria); margin-bottom: 15px;">Condições de Pagamento</h3>
-        <p>O pagamento dos serviços é feito exclusivamente no ato da assinatura do contrato. Formas aceitas:</p>
-        <ul style="margin-left: 20px; margin-top: 10px;">
-            <li>À vista (Dinheiro, PIX ou Boleto).</li>
-            <li>Parcelado em até 12x (sem juros) no cartão de crédito.</li>
-            <li>Empresas de grande porte: Parcelamento no boleto disponível mediante análise de crédito e consulta de condições.</li>
-        </ul>
-    </div>
-
-    <div class="export-section">
-        <button class="btn-export" onclick="gerarPDF()">Baixar Proposta em PDF</button>
-    </div>
-
-    <!-- O PDF gerado lerá estritamente o conteúdo desta div -->
+    <!-- PDF ESTRUTURA OCULTA -->
     <div id="pdf-wrapper">
         <div id="proposta-pdf">
             <div class="pdf-header">
-                <div class="pdf-title">Proposta Comercial - Catálogo de Tours Virtuais</div>
+                <div class="pdf-title">RED WOLF BRAZIL - PROPOSTA COMERCIAL</div>
                 <div class="pdf-meta" id="pdf-data"></div>
             </div>
             
-            <div class="pdf-section">
-                <h3>Escopo Personalizado</h3>
-                <table id="tabela-escopo">
-                    <thead>
-                        <tr>
-                            <th>Descrição do Serviço</th>
-                            <th>Qtd</th>
-                            <th style="text-align: right;">Valor Parcial</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tabela-corpo">
-                        <!-- Preenchido via JS -->
-                    </tbody>
-                    <tfoot>
-                        <tr class="total-row">
-                            <td colspan="2">Valor Total da Proposta</td>
-                            <td style="text-align: right;" id="pdf-total-final">R$ 0,00</td>
-                        </tr>
-                    </tfoot>
-                </table>
-            </div>
+            <h3>Detalhamento do Escopo</h3>
+            <table id="tabela-escopo">
+                <thead>
+                    <tr>
+                        <th>Item / Descrição</th>
+                        <th style="width: 50px; text-align: center;">Qtd</th>
+                        <th style="text-align: right; width: 120px;">Valor (R$)</th>
+                    </tr>
+                </thead>
+                <tbody id="tabela-corpo"></tbody>
+                <tfoot>
+                    <tr class="total-row">
+                        <td colspan="2">Investimento Total</td>
+                        <td style="text-align: right;" id="pdf-total-final">R$ 0,00</td>
+                    </tr>
+                </tfoot>
+            </table>
 
-            <div class="pdf-section">
-                <h3>Prazo e Execução</h3>
-                <p style="font-size: 12px; margin-bottom: 10px;">O projeto segue as fases de Planejamento, Captação (com acompanhamento obrigatório do servidor/responsável) e Pós-produção. O prazo base de entrega é de 60 dias para demandas iniciais.</p>
-            </div>
+            <h3>Prazos e Responsabilidades</h3>
+            <p style="font-size: 11px; color: #444;">Desenvolvimento dividido em Planejamento, Captação e Pós-produção. Prazo base de 60 dias para implantação. É condição obrigatória o acompanhamento de um representante da contratante durante as captações in loco.</p>
 
-            <div class="pdf-section">
-                <h3>Condições de Pagamento</h3>
-                <p style="font-size: 12px;">Pagamento no ato da assinatura. Aceitamos Dinheiro, PIX, Boleto à vista ou parcelamento em até 12x sem juros no cartão. Condições de parcelamento em boleto sujeitas à aprovação de crédito para grandes contas.</p>
-            </div>
+            <h3>Condições de Pagamento</h3>
+            <p style="font-size: 11px; color: #444;">Pagamento no ato da assinatura. Modalidades: Dinheiro, PIX, Boleto à vista ou parcelado em até 12x sem juros no cartão de crédito. Financiamento via boleto parcelado sujeito à aprovação de crédito corporativo.</p>
 
             <div class="footer-pdf">
-                Proposta emitida digitalmente | <strong>Red Wolf Brazil</strong> | CNPJ: 16.371.337/0001-45
+                Documento emitido digitalmente | <strong>Red Wolf Brazil</strong> | CNPJ: 16.371.337/0001-45
             </div>
         </div>
     </div>
 
     <script>
+        // 1. ANIMAÇÃO DE SCROLL (REVEAL)
+        const revealElements = document.querySelectorAll('.reveal');
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                }
+            });
+        }, { threshold: 0.1 });
+        
+        revealElements.forEach(el => revealObserver.observe(el));
+
+        // 2. EFEITO SPOTLIGHT NOS CARDS (MOUSE TRACKING)
+        const cards = document.querySelectorAll('.spotlight');
+        cards.forEach(card => {
+            card.addEventListener('mousemove', e => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                card.style.setProperty('--mouse-x', `${x}px`);
+                card.style.setProperty('--mouse-y', `${y}px`);
+            });
+        });
+
+        // 3. LÓGICA DE ABAS E CÁLCULOS
         let abaAtiva = 'macro';
 
         function openTab(evt, tabName) {
             abaAtiva = tabName;
-            const tabContents = document.getElementsByClassName("tab-content");
-            for (let i = 0; i < tabContents.length; i++) {
-                tabContents[i].style.display = "none";
-            }
-            const tabBtns = document.getElementsByClassName("tab-btn");
-            for (let i = 0; i < tabBtns.length; i++) {
-                tabBtns[i].className = tabBtns[i].className.replace(" active", "");
-            }
-            document.getElementById(tabName).style.display = "block";
-            evt.currentTarget.className += " active";
+            document.querySelectorAll(".tab-content").forEach(tab => tab.classList.remove("active"));
+            document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
+            
+            document.getElementById(tabName).classList.add("active");
+            evt.currentTarget.classList.add("active");
             calcularTotal();
         }
 
-        const formatCurrency = (value) => {
-            return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-        }
+        const formatCurrency = (value) => value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
         function calcularTotal() {
             if(abaAtiva === 'macro') {
                 let qtd = parseInt(document.getElementById('qtdLocais').value) || 20;
                 if(qtd < 20) qtd = 20;
 
-                let valorBase = 35000;
-                let adicionaisLocais = (qtd > 20) ? (qtd - 20) * 1800 : 0;
-                let total = valorBase + adicionaisLocais;
+                let total = 35000 + (qtd > 20 ? (qtd - 20) * 1800 : 0);
 
                 if(document.getElementById('addPostagem').checked) total += (qtd * 600);
                 if(document.getElementById('addOtimizacao').checked) total += (qtd * 300);
@@ -302,12 +364,8 @@
                 document.getElementById('valorTotalMacro').innerText = formatCurrency(total);
             } else {
                 let porte = document.getElementById('porteEmpresa').value;
-                let total = 0;
-                let valorFotoVideo = 1500;
-
-                if(porte === 'pequena') total += 1200;
-                if(porte === 'media') total += 1800;
-                if(porte === 'grande') { total += 2500; valorFotoVideo = 2500; }
+                let total = porte === 'pequena' ? 1200 : (porte === 'media' ? 1800 : 2500);
+                let valorFotoVideo = porte === 'grande' ? 2500 : 1500;
 
                 if(document.getElementById('empOtimizacao').checked) total += 300;
                 if(document.getElementById('empMaterial').checked) total += valorFotoVideo;
@@ -316,98 +374,72 @@
             }
         }
 
-        function construirTabelaPDF() {
+        // 4. GERAÇÃO DO PDF
+        function gerarPDF() {
             const tbody = document.getElementById('tabela-corpo');
             tbody.innerHTML = ''; 
             let totalFinal = 0;
 
             if(abaAtiva === 'macro') {
-                let qtd = parseInt(document.getElementById('qtdLocais').value) || 20;
-                if(qtd < 20) qtd = 20;
+                let qtd = Math.max(parseInt(document.getElementById('qtdLocais').value) || 20, 20);
                 
-                // Base
-                let valorBase = 35000;
-                tbody.innerHTML += `<tr><td>Tour Virtual Interativo - Pacote Base (Até 20 locais)</td><td>1</td><td style="text-align:right;">${formatCurrency(valorBase)}</td></tr>`;
-                totalFinal += valorBase;
+                tbody.innerHTML += `<tr><td>Tour Virtual Interativo - Base (Até 20 locais)</td><td style="text-align:center;">1</td><td style="text-align:right;">${formatCurrency(35000)}</td></tr>`;
+                totalFinal += 35000;
 
-                // Extras Locais
                 if(qtd > 20) {
-                    let qtdExtra = qtd - 20;
-                    let custoExtra = qtdExtra * 1800;
-                    tbody.innerHTML += `<tr><td>Locais Adicionais</td><td>${qtdExtra}</td><td style="text-align:right;">${formatCurrency(custoExtra)}</td></tr>`;
+                    let custoExtra = (qtd - 20) * 1800;
+                    tbody.innerHTML += `<tr><td>Locais Adicionais (${qtd - 20}x)</td><td style="text-align:center;">${qtd - 20}</td><td style="text-align:right;">${formatCurrency(custoExtra)}</td></tr>`;
                     totalFinal += custoExtra;
                 }
-
-                // Checkboxes
                 if(document.getElementById('addPostagem').checked) {
-                    let val = qtd * 600;
-                    tbody.innerHTML += `<tr><td>Postagem individual Google Ficha</td><td>${qtd}</td><td style="text-align:right;">${formatCurrency(val)}</td></tr>`;
-                    totalFinal += val;
+                    tbody.innerHTML += `<tr><td>Postagem individual Google Ficha</td><td style="text-align:center;">${qtd}</td><td style="text-align:right;">${formatCurrency(qtd * 600)}</td></tr>`;
+                    totalFinal += qtd * 600;
                 }
                 if(document.getElementById('addOtimizacao').checked) {
-                    let val = qtd * 300;
-                    tbody.innerHTML += `<tr><td>Otimização de Ficha Google</td><td>${qtd}</td><td style="text-align:right;">${formatCurrency(val)}</td></tr>`;
-                    totalFinal += val;
+                    tbody.innerHTML += `<tr><td>Otimização de Ficha Google</td><td style="text-align:center;">${qtd}</td><td style="text-align:right;">${formatCurrency(qtd * 300)}</td></tr>`;
+                    totalFinal += qtd * 300;
                 }
                 if(document.getElementById('addMaterial').checked) {
-                    let val = qtd * 1500;
-                    tbody.innerHTML += `<tr><td>Produção de Foto/Vídeo</td><td>${qtd}</td><td style="text-align:right;">${formatCurrency(val)}</td></tr>`;
-                    totalFinal += val;
+                    tbody.innerHTML += `<tr><td>Produção de Foto/Vídeo</td><td style="text-align:center;">${qtd}</td><td style="text-align:right;">${formatCurrency(qtd * 1500)}</td></tr>`;
+                    totalFinal += qtd * 1500;
                 }
                 if(document.getElementById('addOffline').checked) {
-                    tbody.innerHTML += `<tr><td>Criação de Tour Offline (Servidores da Contratante)</td><td>1</td><td style="text-align:right;">${formatCurrency(3500)}</td></tr>`;
+                    tbody.innerHTML += `<tr><td>Criação de Tour Offline (Servidor Local)</td><td style="text-align:center;">1</td><td style="text-align:right;">${formatCurrency(3500)}</td></tr>`;
                     totalFinal += 3500;
                 }
-
             } else {
                 let porte = document.getElementById('porteEmpresa').value;
-                let nomePorte = "Pequena";
-                let valorBase = 1200;
-                let valorMaterial = 1500;
+                let valorBase = porte === 'pequena' ? 1200 : (porte === 'media' ? 1800 : 2500);
+                let valorMaterial = porte === 'grande' ? 2500 : 1500;
+                let nomePorte = porte.charAt(0).toUpperCase() + porte.slice(1);
 
-                if(porte === 'media') { nomePorte = "Média"; valorBase = 1800; }
-                if(porte === 'grande') { nomePorte = "Grande"; valorBase = 2500; valorMaterial = 2500; }
-
-                tbody.innerHTML += `<tr><td>Tour Virtual Interativo + Postagem (${nomePorte} Empresa)</td><td>1</td><td style="text-align:right;">${formatCurrency(valorBase)}</td></tr>`;
+                tbody.innerHTML += `<tr><td>Tour Virtual Interativo + Postagem (${nomePorte})</td><td style="text-align:center;">1</td><td style="text-align:right;">${formatCurrency(valorBase)}</td></tr>`;
                 totalFinal += valorBase;
 
                 if(document.getElementById('empOtimizacao').checked) {
-                    tbody.innerHTML += `<tr><td>Otimização de Ficha Cadastral</td><td>1</td><td style="text-align:right;">${formatCurrency(300)}</td></tr>`;
+                    tbody.innerHTML += `<tr><td>Otimização de Ficha Cadastral</td><td style="text-align:center;">1</td><td style="text-align:right;">${formatCurrency(300)}</td></tr>`;
                     totalFinal += 300;
                 }
                 if(document.getElementById('empMaterial').checked) {
-                    tbody.innerHTML += `<tr><td>Produção de Fotografia e Vídeo</td><td>1</td><td style="text-align:right;">${formatCurrency(valorMaterial)}</td></tr>`;
+                    tbody.innerHTML += `<tr><td>Produção de Fotografia e Vídeo</td><td style="text-align:center;">1</td><td style="text-align:right;">${formatCurrency(valorMaterial)}</td></tr>`;
                     totalFinal += valorMaterial;
                 }
             }
 
             document.getElementById('pdf-total-final').innerText = formatCurrency(totalFinal);
+            document.getElementById('pdf-data').innerText = 'Data: ' + new Date().toLocaleDateString('pt-BR');
             
-            // Setar data
-            const hoje = new Date();
-            document.getElementById('pdf-data').innerText = 'Data de geração: ' + hoje.toLocaleDateString('pt-BR');
-        }
-
-        function gerarPDF() {
-            construirTabelaPDF();
-            
-            // Força exibição rápida do bloco para a biblioteca capturar a renderização
             const elemento = document.getElementById('proposta-pdf');
             const wrapper = document.getElementById('pdf-wrapper');
             wrapper.style.display = 'block';
 
-            const opt = {
-                margin:       10,
-                filename:     'Proposta_Red_Wolf_Brazil.pdf',
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true },
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
-
-            // Gera e depois esconde a div novamente
-            html2pdf().set(opt).from(elemento).save().then(() => {
-                wrapper.style.display = 'none';
-            });
+            html2pdf().set({
+                margin: 15,
+                filename: 'Proposta_Red_Wolf.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            }).from(elemento).save().then(() => wrapper.style.display = 'none');
         }
     </script>
 </body>
