@@ -25,7 +25,16 @@
         body { background-color: var(--cor-fundo); color: var(--cor-texto); line-height: 1.6; overflow-x: hidden; }
 
         /* Background Canvas Animation */
-        #bg-canvas { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -2; pointer-events: none; background-color: #000; }
+        #bg-canvas { 
+            position: fixed; 
+            top: 0; left: 0; 
+            width: 100vw; height: 100vh; 
+            z-index: -2; 
+            pointer-events: none; 
+            background-color: #000; 
+            transform: translateZ(0); /* Aceleração de hardware (GPU) */
+            will-change: transform;
+        }
 
         /* Background Glow (Subtle White) */
         .bg-glow { position: fixed; top: -20%; left: 50%; transform: translateX(-50%); width: 80vw; height: 80vh; background: radial-gradient(circle, rgba(255, 255, 255, 0.08) 0%, transparent 70%); z-index: -1; pointer-events: none; filter: blur(80px); }
@@ -357,27 +366,34 @@
             }
         }
 
-        // 4. ANIMAÇÃO DE SCROLL NO BACKGROUND (CANVAS)
+        // 4. ANIMAÇÃO DE SCROLL NO BACKGROUND (CANVAS) - Otimizado para Mobile
         const canvas = document.getElementById("bg-canvas");
-        const context = canvas.getContext("2d");
+        // Desabilita canal alfa (transparência) no canvas para dobrar performance de renderização
+        const context = canvas.getContext("2d", { alpha: false }); 
         const frameCount = 300;
         
-        // Formata o número do frame, ex: ezgif-frame-001.jpg
         const currentFrame = index => `assets/bg_frames/ezgif-frame-${index.toString().padStart(3, '0')}.jpg`;
 
-        const images = [];
-        let imagesLoaded = 0;
+        const images = new Array(frameCount);
 
-        // Pré-carrega as imagens
-        for (let i = 1; i <= frameCount; i++) {
-            const img = new Image();
-            img.src = currentFrame(i);
-            img.onload = () => {
-                imagesLoaded++;
-                if (i === 1) drawImageScaled(img); // Desenha o primeiro frame assim que carregar
-            };
-            images.push(img);
-        }
+        // 1. Carrega o frame inicial imediatamente para renderização rápida
+        const firstImg = new Image();
+        firstImg.src = currentFrame(1);
+        firstImg.onload = () => drawImageScaled(firstImg);
+        images[0] = firstImg;
+
+        // 2. Carregamento Preguiçoso (Lazy Load) das outras 299 imagens
+        // Aguarda a página inteira carregar antes de disparar o download em massa,
+        // evitando travamento na rede e CPU de celulares.
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                for (let i = 2; i <= frameCount; i++) {
+                    const img = new Image();
+                    img.src = currentFrame(i);
+                    images[i - 1] = img;
+                }
+            }, 200);
+        });
 
         // Desenha a imagem preenchendo o canvas (object-fit: cover behavior)
         function drawImageScaled(img) {
@@ -386,12 +402,11 @@
             const ratio = Math.max(hRatio, vRatio);
             const centerShift_x = (canvas.width - img.width * ratio) / 2;
             const centerShift_y = (canvas.height - img.height * ratio) / 2;
-            context.clearRect(0, 0, canvas.width, canvas.height);
+            
             context.drawImage(img, 0, 0, img.width, img.height,
                 centerShift_x, centerShift_y, img.width * ratio, img.height * ratio);
         }
 
-        // Atualiza as dimensões do canvas ao redimensionar a janela
         function resizeCanvas() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
@@ -400,25 +415,30 @@
         window.addEventListener('resize', resizeCanvas);
         resizeCanvas();
 
-        // Atualiza o frame baseado no scroll
+        // Otimização: Throttling do scroll usando requestAnimationFrame
+        let isTicking = false;
         function updateCanvasFrame() {
-            const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
-            const maxScrollTop = document.documentElement.scrollHeight - window.innerHeight;
-            
-            // Impede divisão por zero caso a página seja muito pequena
-            if (maxScrollTop <= 0) return; 
-            
-            const scrollFraction = Math.max(0, Math.min(1, scrollTop / maxScrollTop));
-            
-            // Calcula o índice (0 a 299)
-            const frameIndex = Math.min(frameCount - 1, Math.floor(scrollFraction * frameCount));
-            
-            if (images[frameIndex] && images[frameIndex].complete) {
-                requestAnimationFrame(() => drawImageScaled(images[frameIndex]));
+            if (!isTicking) {
+                window.requestAnimationFrame(() => {
+                    const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+                    const maxScrollTop = document.documentElement.scrollHeight - window.innerHeight;
+                    
+                    if (maxScrollTop > 0) {
+                        const scrollFraction = Math.max(0, Math.min(1, scrollTop / maxScrollTop));
+                        const frameIndex = Math.min(frameCount - 1, Math.floor(scrollFraction * frameCount));
+                        
+                        if (images[frameIndex] && images[frameIndex].complete) {
+                            drawImageScaled(images[frameIndex]);
+                        }
+                    }
+                    isTicking = false;
+                });
+                isTicking = true;
             }
         }
 
-        window.addEventListener('scroll', updateCanvasFrame);
+        // { passive: true } diz ao navegador que não cancelaremos o scroll, deixando-o super fluido no mobile
+        window.addEventListener('scroll', updateCanvasFrame, { passive: true });
     </script>
 </body>
 </html>
