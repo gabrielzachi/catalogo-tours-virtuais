@@ -50,7 +50,7 @@
         .tour-wrapper:hover { border-color: var(--borda-hover); }
         iframe { width: 100%; height: 100%; border: none; display: block; } /* FIXED: height 100% added */
         .tour-main { height: 650px; }
-        .tour-micro { height: 400px; margin-bottom: 30px; }
+        .tour-micro { height: 600px; margin-bottom: 30px; }
 
         /* Spotlight Cards (Mouse Tracking + iOS Glass) */
         .spotlight { position: relative; background: var(--fundo-card); border: 1px solid var(--borda-sutil); border-radius: 16px; padding: 30px; overflow: hidden; transition: border-color 0.3s ease, transform 0.3s ease; backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4); }
@@ -98,7 +98,7 @@
         .btn-export:hover { background: #E0E0E0; transform: translateY(-2px); box-shadow: 0 10px 30px rgba(255, 255, 255, 0.2); }
 
         /* PDF Render Wrapper (Hidden) */
-        #pdf-wrapper { display: none; }
+        #pdf-wrapper { position: absolute; top: -10000px; left: -10000px; width: 210mm; }
         #proposta-pdf { background: #ffffff; color: #111; padding: 40px; font-family: 'Inter', sans-serif; width: 100%; }
         #proposta-pdf .pdf-header { text-align: left; border-bottom: 2px solid #000; padding-bottom: 20px; margin-bottom: 30px; }
         #proposta-pdf .pdf-title { font-size: 20px; font-weight: 700; color: #000; }
@@ -109,6 +109,30 @@
         #proposta-pdf th { background: #f5f5f5; color: #000; font-weight: 600; }
         #proposta-pdf .total-row { font-weight: 700; background: #e9ecef; font-size: 14px; }
         #proposta-pdf .footer-pdf { margin-top: 40px; font-size: 10px; text-align: center; color: #777; border-top: 1px solid #ddd; padding-top: 15px; }
+
+        /* WhatsApp Button */
+        .whatsapp-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #25D366;
+            color: #FFF;
+            padding: 12px 24px;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            text-decoration: none;
+            box-shadow: 0 10px 30px rgba(37, 211, 102, 0.3);
+            z-index: 999;
+            transition: all 0.3s ease;
+        }
+        .whatsapp-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(37, 211, 102, 0.5);
+            color: #FFF;
+        }
     </style>
 </head>
 <body>
@@ -429,17 +453,24 @@
             document.getElementById('pdf-data').innerText = 'Data: ' + new Date().toLocaleDateString('pt-BR');
             
             const elemento = document.getElementById('proposta-pdf');
-            const wrapper = document.getElementById('pdf-wrapper');
-            wrapper.style.display = 'block';
-
+            // Removemos as manipulações de display já que o wrapper está position absolute offscreen
+            
             html2pdf().set({
                 margin: 15,
                 filename: 'Proposta_Red_Wolf.pdf',
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { scale: 2, useCORS: true },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            }).from(elemento).save().then(() => wrapper.style.display = 'none');
+            }).from(elemento).save();
         }
     </script>
+
+    <!-- WhatsApp Floating Button -->
+    <a href="https://wa.me/5566999366959" class="whatsapp-btn" target="_blank" rel="noopener noreferrer">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+            <path d="M12.031 2C6.495 2 2.016 6.478 2.016 12.014c0 1.767.464 3.493 1.345 5.01L2 22l5.127-1.345a9.986 9.986 0 004.904 1.282h.004c5.536 0 10.015-4.478 10.015-10.014 0-2.684-1.045-5.205-2.942-7.102A9.948 9.948 0 0012.031 2zm5.83 14.156c-.249.703-1.428 1.347-1.983 1.403-.513.052-1.168.176-3.32-.714-2.585-1.069-4.225-3.69-4.354-3.863-.128-.172-1.04-1.385-1.04-2.641 0-1.256.654-1.876.885-2.13.232-.254.507-.318.675-.318.17 0 .338 0 .484.007.155.008.363-.058.568.437.211.512.719 1.758.783 1.886.063.128.106.277.021.448-.085.17-.127.276-.254.425-.127.15-.265.32-.38.437-.127.127-.26.265-.116.513.141.247.632 1.049 1.363 1.701.944.841 1.737 1.101 1.992 1.229.254.127.401.106.55-.064.148-.17.633-.74.802-.993.17-.255.338-.212.571-.127.232.085 1.478.697 1.732.825.253.127.422.19.485.3.063.106.063.613-.186 1.316z"/>
+        </svg>
+        WhatsApp
+    </a>
 </body>
 </html>
