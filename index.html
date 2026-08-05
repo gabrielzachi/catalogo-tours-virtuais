@@ -97,18 +97,6 @@
         .btn-export { background: var(--cor-texto); color: var(--cor-fundo); font-size: 1rem; font-weight: 600; padding: 16px 32px; border: none; border-radius: 12px; cursor: pointer; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 8px; }
         .btn-export:hover { background: #E0E0E0; transform: translateY(-2px); box-shadow: 0 10px 30px rgba(255, 255, 255, 0.2); }
 
-        /* PDF Render Wrapper (Hidden) */
-        #pdf-wrapper { display: none; }
-        #proposta-pdf { background: #ffffff; color: #111; padding: 40px; font-family: 'Inter', sans-serif; width: 100%; }
-        #proposta-pdf .pdf-header { text-align: left; border-bottom: 2px solid #000; padding-bottom: 20px; margin-bottom: 30px; }
-        #proposta-pdf .pdf-title { font-size: 20px; font-weight: 700; color: #000; }
-        #proposta-pdf .pdf-meta { font-size: 11px; color: #666; margin-top: 5px; }
-        #proposta-pdf h3 { font-size: 14px; color: #000; margin-bottom: 10px; margin-top: 20px; text-transform: uppercase; letter-spacing: 1px; }
-        #proposta-pdf table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        #proposta-pdf th, #proposta-pdf td { border: 1px solid #ddd; padding: 10px; text-align: left; font-size: 12px; }
-        #proposta-pdf th { background: #f5f5f5; color: #000; font-weight: 600; }
-        #proposta-pdf .total-row { font-weight: 700; background: #e9ecef; font-size: 14px; }
-        #proposta-pdf .footer-pdf { margin-top: 40px; font-size: 10px; text-align: center; color: #777; border-top: 1px solid #ddd; padding-top: 15px; }
 
         /* WhatsApp Button */
         .whatsapp-btn {
@@ -294,43 +282,7 @@
         </div>
     </main>
 
-    <!-- PDF ESTRUTURA OCULTA -->
-    <div id="pdf-wrapper">
-        <div id="proposta-pdf">
-            <div class="pdf-header">
-                <div class="pdf-title">RED WOLF BRAZIL - PROPOSTA COMERCIAL</div>
-                <div class="pdf-meta" id="pdf-data"></div>
-            </div>
-            
-            <h3>Detalhamento do Escopo</h3>
-            <table id="tabela-escopo">
-                <thead>
-                    <tr>
-                        <th>Item / Descrição</th>
-                        <th style="width: 50px; text-align: center;">Qtd</th>
-                        <th style="text-align: right; width: 120px;">Valor (R$)</th>
-                    </tr>
-                </thead>
-                <tbody id="tabela-corpo"></tbody>
-                <tfoot>
-                    <tr class="total-row">
-                        <td colspan="2">Investimento Total</td>
-                        <td style="text-align: right;" id="pdf-total-final">R$ 0,00</td>
-                    </tr>
-                </tfoot>
-            </table>
 
-            <h3>Prazos e Responsabilidades</h3>
-            <p style="font-size: 11px; color: #444;">Desenvolvimento dividido em Planejamento, Captação e Pós-produção. Prazo base de 60 dias para implantação. É condição obrigatória o acompanhamento de um representante da contratante durante as captações in loco.</p>
-
-            <h3>Condições de Pagamento</h3>
-            <p style="font-size: 11px; color: #444;">Pagamento no ato da assinatura. Modalidades: Dinheiro, PIX, Boleto à vista ou parcelado em até 12x sem juros no cartão de crédito. Financiamento via boleto parcelado sujeito à aprovação de crédito corporativo.</p>
-
-            <div class="footer-pdf">
-                Documento emitido digitalmente | <strong>Red Wolf Brazil</strong> | CNPJ: 16.371.337/0001-45
-            </div>
-        </div>
-    </div>
 
     <script>
         // 1. ANIMAÇÃO DE SCROLL (REVEAL)
@@ -399,35 +351,38 @@
 
         // 4. GERAÇÃO DO PDF
         function gerarPDF() {
-            const tbody = document.getElementById('tabela-corpo');
-            tbody.innerHTML = ''; 
+            let tbodyHTML = '';
             let totalFinal = 0;
 
+            const tdS = 'border: 1px solid #ddd; padding: 10px; font-size: 12px; color: #000;';
+            const tdS_C = tdS + ' text-align: center;';
+            const tdS_R = tdS + ' text-align: right;';
+            
             if(abaAtiva === 'macro') {
                 let qtd = Math.max(parseInt(document.getElementById('qtdLocais').value) || 20, 20);
                 
-                tbody.innerHTML += `<tr><td>Tour Virtual Interativo - Base (Até 20 locais)</td><td style="text-align:center;">1</td><td style="text-align:right;">${formatCurrency(35000)}</td></tr>`;
+                tbodyHTML += `<tr><td style="${tdS}">Tour Virtual Interativo - Base (Até 20 locais)</td><td style="${tdS_C}">1</td><td style="${tdS_R}">${formatCurrency(35000)}</td></tr>`;
                 totalFinal += 35000;
 
                 if(qtd > 20) {
                     let custoExtra = (qtd - 20) * 1800;
-                    tbody.innerHTML += `<tr><td>Locais Adicionais (${qtd - 20}x)</td><td style="text-align:center;">${qtd - 20}</td><td style="text-align:right;">${formatCurrency(custoExtra)}</td></tr>`;
+                    tbodyHTML += `<tr><td style="${tdS}">Locais Adicionais (${qtd - 20}x)</td><td style="${tdS_C}">${qtd - 20}</td><td style="${tdS_R}">${formatCurrency(custoExtra)}</td></tr>`;
                     totalFinal += custoExtra;
                 }
                 if(document.getElementById('addPostagem').checked) {
-                    tbody.innerHTML += `<tr><td>Postagem individual Google Ficha</td><td style="text-align:center;">${qtd}</td><td style="text-align:right;">${formatCurrency(qtd * 600)}</td></tr>`;
+                    tbodyHTML += `<tr><td style="${tdS}">Postagem individual Google Ficha</td><td style="${tdS_C}">${qtd}</td><td style="${tdS_R}">${formatCurrency(qtd * 600)}</td></tr>`;
                     totalFinal += qtd * 600;
                 }
                 if(document.getElementById('addOtimizacao').checked) {
-                    tbody.innerHTML += `<tr><td>Otimização de Ficha Google</td><td style="text-align:center;">${qtd}</td><td style="text-align:right;">${formatCurrency(qtd * 300)}</td></tr>`;
+                    tbodyHTML += `<tr><td style="${tdS}">Otimização de Ficha Google</td><td style="${tdS_C}">${qtd}</td><td style="${tdS_R}">${formatCurrency(qtd * 300)}</td></tr>`;
                     totalFinal += qtd * 300;
                 }
                 if(document.getElementById('addMaterial').checked) {
-                    tbody.innerHTML += `<tr><td>Produção de Foto/Vídeo</td><td style="text-align:center;">${qtd}</td><td style="text-align:right;">${formatCurrency(qtd * 1500)}</td></tr>`;
+                    tbodyHTML += `<tr><td style="${tdS}">Produção de Foto/Vídeo</td><td style="${tdS_C}">${qtd}</td><td style="${tdS_R}">${formatCurrency(qtd * 1500)}</td></tr>`;
                     totalFinal += qtd * 1500;
                 }
                 if(document.getElementById('addOffline').checked) {
-                    tbody.innerHTML += `<tr><td>Criação de Tour Offline (Servidor Local)</td><td style="text-align:center;">1</td><td style="text-align:right;">${formatCurrency(3500)}</td></tr>`;
+                    tbodyHTML += `<tr><td style="${tdS}">Criação de Tour Offline (Servidor Local)</td><td style="${tdS_C}">1</td><td style="${tdS_R}">${formatCurrency(3500)}</td></tr>`;
                     totalFinal += 3500;
                 }
             } else {
@@ -436,37 +391,75 @@
                 let valorMaterial = porte === 'grande' ? 2500 : 1500;
                 let nomePorte = porte.charAt(0).toUpperCase() + porte.slice(1);
 
-                tbody.innerHTML += `<tr><td>Tour Virtual Interativo + Postagem (${nomePorte})</td><td style="text-align:center;">1</td><td style="text-align:right;">${formatCurrency(valorBase)}</td></tr>`;
+                tbodyHTML += `<tr><td style="${tdS}">Tour Virtual Interativo + Postagem (${nomePorte})</td><td style="${tdS_C}">1</td><td style="${tdS_R}">${formatCurrency(valorBase)}</td></tr>`;
                 totalFinal += valorBase;
 
                 if(document.getElementById('empOtimizacao').checked) {
-                    tbody.innerHTML += `<tr><td>Otimização de Ficha Cadastral</td><td style="text-align:center;">1</td><td style="text-align:right;">${formatCurrency(300)}</td></tr>`;
+                    tbodyHTML += `<tr><td style="${tdS}">Otimização de Ficha Cadastral</td><td style="${tdS_C}">1</td><td style="${tdS_R}">${formatCurrency(300)}</td></tr>`;
                     totalFinal += 300;
                 }
                 if(document.getElementById('empMaterial').checked) {
-                    tbody.innerHTML += `<tr><td>Produção de Fotografia e Vídeo</td><td style="text-align:center;">1</td><td style="text-align:right;">${formatCurrency(valorMaterial)}</td></tr>`;
+                    tbodyHTML += `<tr><td style="${tdS}">Produção de Fotografia e Vídeo</td><td style="${tdS_C}">1</td><td style="${tdS_R}">${formatCurrency(valorMaterial)}</td></tr>`;
                     totalFinal += valorMaterial;
                 }
             }
 
-            document.getElementById('pdf-total-final').innerText = formatCurrency(totalFinal);
-            document.getElementById('pdf-data').innerText = 'Data: ' + new Date().toLocaleDateString('pt-BR');
-            
-            const elemento = document.getElementById('proposta-pdf');
-            
-            html2pdf().set({
+            const dataAtual = 'Data: ' + new Date().toLocaleDateString('pt-BR');
+            const thS = 'border: 1px solid #ddd; padding: 10px; font-size: 12px; background: #f5f5f5; color: #000; font-weight: 600;';
+
+            const htmlString = \`
+            <div style="background: #ffffff; color: #111; padding: 40px; font-family: 'Inter', sans-serif; width: 100%; box-sizing: border-box;">
+                <div style="text-align: left; border-bottom: 2px solid #000; padding-bottom: 20px; margin-bottom: 30px;">
+                    <div style="font-size: 20px; font-weight: 700; color: #000;">RED WOLF BRAZIL - PROPOSTA COMERCIAL</div>
+                    <div style="font-size: 11px; color: #666; margin-top: 5px;">\${dataAtual}</div>
+                </div>
+                
+                <h3 style="font-size: 14px; color: #000; margin-bottom: 10px; margin-top: 20px; text-transform: uppercase; letter-spacing: 1px;">Detalhamento do Escopo</h3>
+                <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+                    <thead>
+                        <tr>
+                            <th style="\${thS} text-align: left;">Item / Descrição</th>
+                            <th style="\${thS} text-align: center; width: 50px;">Qtd</th>
+                            <th style="\${thS} text-align: right; width: 120px;">Valor (R$)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        \${tbodyHTML}
+                    </tbody>
+                    <tfoot>
+                        <tr style="font-weight: 700; background: #e9ecef; font-size: 14px;">
+                            <td colspan="2" style="border: 1px solid #ddd; padding: 10px; text-align: left; color: #000;">Investimento Total</td>
+                            <td style="border: 1px solid #ddd; padding: 10px; text-align: right; color: #000;">\${formatCurrency(totalFinal)}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+
+                <h3 style="font-size: 14px; color: #000; margin-bottom: 10px; margin-top: 30px; text-transform: uppercase; letter-spacing: 1px;">Prazos e Responsabilidades</h3>
+                <p style="font-size: 11px; color: #444; line-height: 1.5; margin-bottom: 20px;">Desenvolvimento dividido em Planejamento, Captação e Pós-produção. Prazo base de 60 dias para implantação. É condição obrigatória o acompanhamento de um representante da contratante durante as captações in loco.</p>
+
+                <h3 style="font-size: 14px; color: #000; margin-bottom: 10px; margin-top: 20px; text-transform: uppercase; letter-spacing: 1px;">Condições de Pagamento</h3>
+                <p style="font-size: 11px; color: #444; line-height: 1.5; margin-bottom: 30px;">Pagamento no ato da assinatura. Modalidades: Dinheiro, PIX, Boleto à vista ou parcelado em até 12x sem juros no cartão de crédito. Financiamento via boleto parcelado sujeito à aprovação de crédito corporativo.</p>
+
+                <div style="margin-top: 40px; font-size: 10px; text-align: center; color: #777; border-top: 1px solid #ddd; padding-top: 15px;">
+                    Documento emitido digitalmente | <strong>Red Wolf Brazil</strong> | CNPJ: 16.371.337/0001-45
+                </div>
+            </div>
+            \`;
+
+            // Criar um elemento temporário para garantir o parse
+            const opt = {
                 margin: 15,
                 filename: 'Proposta_Red_Wolf.pdf',
                 image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { 
-                    scale: 2, 
-                    useCORS: true,
-                    onclone: function(clonedDoc) {
-                        clonedDoc.getElementById('pdf-wrapper').style.display = 'block';
-                    }
-                },
+                html2canvas: { scale: 2, useCORS: true },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            }).from(elemento).save();
+            };
+
+            // Convert string to HTML element (html2pdf sometimes works better with an actual DOM node)
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = htmlString;
+            
+            html2pdf().set(opt).from(tempDiv).save();
         }
     </script>
 
