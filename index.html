@@ -98,7 +98,7 @@
         .btn-export:hover { background: #E0E0E0; transform: translateY(-2px); box-shadow: 0 10px 30px rgba(255, 255, 255, 0.2); }
 
         /* PDF Render Wrapper (Hidden) */
-        #pdf-wrapper { position: absolute; top: -10000px; left: -10000px; width: 210mm; }
+        #pdf-wrapper { display: none; }
         #proposta-pdf { background: #ffffff; color: #111; padding: 40px; font-family: 'Inter', sans-serif; width: 100%; }
         #proposta-pdf .pdf-header { text-align: left; border-bottom: 2px solid #000; padding-bottom: 20px; margin-bottom: 30px; }
         #proposta-pdf .pdf-title { font-size: 20px; font-weight: 700; color: #000; }
@@ -453,13 +453,18 @@
             document.getElementById('pdf-data').innerText = 'Data: ' + new Date().toLocaleDateString('pt-BR');
             
             const elemento = document.getElementById('proposta-pdf');
-            // Removemos as manipulações de display já que o wrapper está position absolute offscreen
             
             html2pdf().set({
                 margin: 15,
                 filename: 'Proposta_Red_Wolf.pdf',
                 image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true },
+                html2canvas: { 
+                    scale: 2, 
+                    useCORS: true,
+                    onclone: function(clonedDoc) {
+                        clonedDoc.getElementById('pdf-wrapper').style.display = 'block';
+                    }
+                },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             }).from(elemento).save();
         }
