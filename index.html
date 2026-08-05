@@ -455,11 +455,22 @@
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
-            // Convert string to HTML element (html2pdf sometimes works better with an actual DOM node)
+            // Convert string to HTML element
             const tempDiv = document.createElement('div');
             tempDiv.innerHTML = htmlString;
             
-            html2pdf().set(opt).from(tempDiv).save();
+            // IMPORTANTE: O html2canvas (usado pelo html2pdf) exige que o elemento
+            // esteja fisicamente no DOM para conseguir calcular as dimensões corretas.
+            // Se estiver "solto" na memória, ele renderiza uma imagem 0x0 (em branco).
+            tempDiv.style.position = 'absolute';
+            tempDiv.style.left = '-9999px';
+            tempDiv.style.top = '0';
+            document.body.appendChild(tempDiv);
+            
+            html2pdf().set(opt).from(tempDiv).save().then(() => {
+                // Remover do DOM após gerar o PDF
+                document.body.removeChild(tempDiv);
+            });
         }
     </script>
 
