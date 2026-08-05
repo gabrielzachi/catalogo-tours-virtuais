@@ -24,6 +24,9 @@
         
         body { background-color: var(--cor-fundo); color: var(--cor-texto); line-height: 1.6; overflow-x: hidden; }
 
+        /* Background Canvas Animation */
+        #bg-canvas { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -2; pointer-events: none; background-color: #000; }
+
         /* Background Glow (Subtle White) */
         .bg-glow { position: fixed; top: -20%; left: 50%; transform: translateX(-50%); width: 80vw; height: 80vh; background: radial-gradient(circle, rgba(255, 255, 255, 0.08) 0%, transparent 70%); z-index: -1; pointer-events: none; filter: blur(80px); }
 
@@ -102,6 +105,7 @@
 </head>
 <body>
 
+    <canvas id="bg-canvas"></canvas>
     <div class="bg-glow"></div>
 
     <nav>
@@ -327,6 +331,69 @@
                 document.getElementById('valorTotalMicro').innerText = formatCurrency(total);
             }
         }
+
+        // 4. ANIMAÇÃO DE SCROLL NO BACKGROUND (CANVAS)
+        const canvas = document.getElementById("bg-canvas");
+        const context = canvas.getContext("2d");
+        const frameCount = 300;
+        
+        // Formata o número do frame, ex: ezgif-frame-001.jpg
+        const currentFrame = index => `assets/bg_frames/ezgif-frame-${index.toString().padStart(3, '0')}.jpg`;
+
+        const images = [];
+        let imagesLoaded = 0;
+
+        // Pré-carrega as imagens
+        for (let i = 1; i <= frameCount; i++) {
+            const img = new Image();
+            img.src = currentFrame(i);
+            img.onload = () => {
+                imagesLoaded++;
+                if (i === 1) drawImageScaled(img); // Desenha o primeiro frame assim que carregar
+            };
+            images.push(img);
+        }
+
+        // Desenha a imagem preenchendo o canvas (object-fit: cover behavior)
+        function drawImageScaled(img) {
+            const hRatio = canvas.width / img.width;
+            const vRatio = canvas.height / img.height;
+            const ratio = Math.max(hRatio, vRatio);
+            const centerShift_x = (canvas.width - img.width * ratio) / 2;
+            const centerShift_y = (canvas.height - img.height * ratio) / 2;
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            context.drawImage(img, 0, 0, img.width, img.height,
+                centerShift_x, centerShift_y, img.width * ratio, img.height * ratio);
+        }
+
+        // Atualiza as dimensões do canvas ao redimensionar a janela
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            updateCanvasFrame();
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // Atualiza o frame baseado no scroll
+        function updateCanvasFrame() {
+            const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+            const maxScrollTop = document.documentElement.scrollHeight - window.innerHeight;
+            
+            // Impede divisão por zero caso a página seja muito pequena
+            if (maxScrollTop <= 0) return; 
+            
+            const scrollFraction = Math.max(0, Math.min(1, scrollTop / maxScrollTop));
+            
+            // Calcula o índice (0 a 299)
+            const frameIndex = Math.min(frameCount - 1, Math.floor(scrollFraction * frameCount));
+            
+            if (images[frameIndex] && images[frameIndex].complete) {
+                requestAnimationFrame(() => drawImageScaled(images[frameIndex]));
+            }
+        }
+
+        window.addEventListener('scroll', updateCanvasFrame);
     </script>
 </body>
 </html>
