@@ -168,19 +168,19 @@
 
         <!-- Calculadora -->
         <section class="reveal">
-            <h2>Monte o seu Escopo</h2>
+            <h2>Monte o seu orçamento Personalizado</h2>
             
             <div class="tabs-wrapper">
                 <div class="tabs">
-                    <button class="tab-btn active" onclick="openTab(event, 'macro')">Contrato Principal (Prefeituras)</button>
-                    <button class="tab-btn" onclick="openTab(event, 'micro')">Empresas Avulsas</button>
+                    <button class="tab-btn active" onclick="openTab(event, 'macro')">Prefeitura</button>
+                    <button class="tab-btn" onclick="openTab(event, 'micro')">Empresas</button>
                 </div>
             </div>
 
             <!-- ABA 1: CONTRATO MACRO -->
             <div id="macro" class="tab-content active spotlight">
                 <div class="form-group">
-                    <label>Quantidade de Locais (Pacote Base: 20)</label>
+                    <label>Quantidade de Locais a serem inseridos no Tour Virtual Interativo (Pacote Inicial: 20)</label>
                     <input type="number" id="qtdLocais" min="20" value="20" oninput="calcularTotal()">
                     <div class="input-hint">Acima de 20 locais, acréscimo de R$ 1.800,00 por unidade. Validade estrutural de 1 ano.</div>
                 </div>
@@ -235,7 +235,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Porte da Empresa / Complexidade</label>
+                    <label>Escolha o porte da empresa para inserção no Tour interativo + Postagem do Tour na ficha cadastral do Google</label>
                     <select id="porteEmpresa" onchange="calcularTotal()">
                         <option value="pequena">Pequena (Até 4 fotos) - R$ 1.200,00</option>
                         <option value="media">Média (Até 20 fotos) - R$ 1.800,00</option>
@@ -244,7 +244,7 @@
                 </div>
                 
                 <div class="form-group">
-                    <label>Módulos Adicionais:</label>
+                    <label>Serviços Adicionais:</label>
                     <label class="checkbox-group">
                         <input type="checkbox" id="empOtimizacao" onchange="calcularTotal()">
                         <div>
@@ -272,6 +272,9 @@
             <h3>Condições Comerciais</h3>
             <p style="color: var(--cor-texto-mutado); font-size: 0.95rem; margin-top: 10px;">
                 O pagamento é firmado no ato da assinatura. Aceitamos <strong>PIX, Boleto à vista ou parcelamento em até 12x sem juros</strong> no cartão de crédito. Projetos de grande porte possuem opção de parcelamento direto via boleto, sujeito à análise de crédito.
+            </p>
+            <p style="color: var(--cor-texto-mutado); font-size: 0.95rem; margin-top: 10px;">
+                O Tour Virtual Interativo é válido por 1 ano após a entrega final e pode ser renovado sem alterações por uma fração de 30% do valor inicial (Apenas o valor do Tour Interativo). O Tour Virtual publicado no Google dentro das fichas cadastrais é perpétuo e não necessita de renovação. Caso haja o interesse na remoção do tour do google, pode ser solicitada a qualquer momento por e-mail redigido por um representante legal da contratante.
             </p>
         </section>
 
