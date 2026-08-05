@@ -44,8 +44,26 @@
         h2 { font-size: 2rem; font-weight: 600; letter-spacing: -1px; margin-bottom: 40px; }
 
         /* Animations (Scroll Reveal) */
-        .reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.8s cubic-bezier(0.5, 0, 0, 1), transform 0.8s cubic-bezier(0.5, 0, 0, 1); }
-        .reveal.active { opacity: 1; transform: translateY(0); }
+        .reveal { opacity: 0; transform: translateY(40px) scale(0.98); transition: all 0.8s cubic-bezier(0.25, 1, 0.5, 1); }
+        .reveal.active { opacity: 1; transform: translateY(0) scale(1); }
+
+        /* Header Glass Box */
+        .glass-header {
+            background: rgba(15, 15, 15, 0.4);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--borda-sutil);
+            border-radius: 24px;
+            padding: 50px 30px;
+            max-width: 800px;
+            margin: 0 auto;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.6);
+            transition: transform 0.4s ease, border-color 0.4s ease;
+        }
+        .glass-header:hover {
+            border-color: rgba(255, 255, 255, 0.25);
+            transform: translateY(-5px);
+        }
 
         /* Tour iframe container */
         .tour-wrapper { width: 100%; border-radius: 16px; overflow: hidden; border: 1px solid var(--borda-sutil); box-shadow: 0 20px 50px rgba(0,0,0,0.8); transition: border-color 0.3s ease; background: #000; margin-bottom: 80px; }
@@ -116,8 +134,10 @@
 
     <header class="reveal">
         <div class="container">
-            <h1>O Mundo em 360°</h1>
-            <p class="subtitle">Faça aqui o orçamento personalizado para o seu Tour Virtual Interativo e serviços complementares.</p>
+            <div class="glass-header">
+                <h1>O Mundo em 360°</h1>
+                <p class="subtitle">Faça aqui o orçamento personalizado para o seu Tour Virtual Interativo e serviços complementares.</p>
+            </div>
         </div>
     </header>
 
@@ -268,15 +288,17 @@
 
 
     <script>
-        // 1. ANIMAÇÃO DE SCROLL (REVEAL)
+        // 1. ANIMAÇÃO DE SCROLL (REVEAL ENTRADA E SAÍDA)
         const revealElements = document.querySelectorAll('.reveal');
         const revealObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
                     entry.target.classList.add('active');
+                } else {
+                    entry.target.classList.remove('active');
                 }
             });
-        }, { threshold: 0.1 });
+        }, { threshold: 0.15 });
         
         revealElements.forEach(el => revealObserver.observe(el));
 
