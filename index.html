@@ -366,34 +366,24 @@
             }
         }
 
-        // 4. ANIMAÇÃO DE SCROLL NO BACKGROUND (CANVAS) - Otimizado para Mobile
+        // 4. ANIMAÇÃO DE SCROLL NO BACKGROUND (CANVAS)
         const canvas = document.getElementById("bg-canvas");
-        // Desabilita canal alfa (transparência) no canvas para dobrar performance de renderização
-        const context = canvas.getContext("2d", { alpha: false }); 
+        const context = canvas.getContext("2d", { alpha: false }); // alpha: false para renderização muito mais leve na GPU
         const frameCount = 300;
         
         const currentFrame = index => `assets/bg_frames/ezgif-frame-${index.toString().padStart(3, '0')}.jpg`;
 
-        const images = new Array(frameCount);
+        const images = [];
 
-        // 1. Carrega o frame inicial imediatamente para renderização rápida
-        const firstImg = new Image();
-        firstImg.src = currentFrame(1);
-        firstImg.onload = () => drawImageScaled(firstImg);
-        images[0] = firstImg;
-
-        // 2. Carregamento Preguiçoso (Lazy Load) das outras 299 imagens
-        // Aguarda a página inteira carregar antes de disparar o download em massa,
-        // evitando travamento na rede e CPU de celulares.
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                for (let i = 2; i <= frameCount; i++) {
-                    const img = new Image();
-                    img.src = currentFrame(i);
-                    images[i - 1] = img;
-                }
-            }, 200);
-        });
+        // Pré-carrega todas as imagens assim que o script rodar (evita tela preta por tempo prolongado)
+        for (let i = 1; i <= frameCount; i++) {
+            const img = new Image();
+            img.src = currentFrame(i);
+            img.onload = () => {
+                if (i === 1) drawImageScaled(img); // Garante que a primeira foto é desenhada logo que baixar
+            };
+            images.push(img);
+        }
 
         // Desenha a imagem preenchendo o canvas (object-fit: cover behavior)
         function drawImageScaled(img) {
@@ -403,6 +393,8 @@
             const centerShift_x = (canvas.width - img.width * ratio) / 2;
             const centerShift_y = (canvas.height - img.height * ratio) / 2;
             
+            // clearRect opcional, mas evita bugs residuais de redimensionamento
+            context.clearRect(0, 0, canvas.width, canvas.height);
             context.drawImage(img, 0, 0, img.width, img.height,
                 centerShift_x, centerShift_y, img.width * ratio, img.height * ratio);
         }
@@ -415,7 +407,6 @@
         window.addEventListener('resize', resizeCanvas);
         resizeCanvas();
 
-        // Otimização: Throttling do scroll usando requestAnimationFrame
         let isTicking = false;
         function updateCanvasFrame() {
             if (!isTicking) {
@@ -427,8 +418,14 @@
                         const scrollFraction = Math.max(0, Math.min(1, scrollTop / maxScrollTop));
                         const frameIndex = Math.min(frameCount - 1, Math.floor(scrollFraction * frameCount));
                         
-                        if (images[frameIndex] && images[frameIndex].complete) {
-                            drawImageScaled(images[frameIndex]);
+                        // Encontra a imagem mais próxima carregada caso a exata não esteja pronta
+                        let targetFrame = frameIndex;
+                        while (targetFrame >= 0 && (!images[targetFrame] || !images[targetFrame].complete)) {
+                            targetFrame--; // Volta os frames até achar o último carregado
+                        }
+                        
+                        if (targetFrame >= 0) {
+                            drawImageScaled(images[targetFrame]);
                         }
                     }
                     isTicking = false;
@@ -437,7 +434,6 @@
             }
         }
 
-        // { passive: true } diz ao navegador que não cancelaremos o scroll, deixando-o super fluido no mobile
         window.addEventListener('scroll', updateCanvasFrame, { passive: true });
     </script>
 </body>
