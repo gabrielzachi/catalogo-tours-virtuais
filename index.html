@@ -383,7 +383,7 @@
             }
         }
 
-        // 4. ANIMAÇÃO DE SCROLL NO BACKGROUND (CANVAS) COM PRELOADER
+        // 4. ANIMAÇÃO DE SCROLL NO BACKGROUND (CANVAS) COM PRELOADER ROBUSTO
         const canvas = document.getElementById("bg-canvas");
         const context = canvas.getContext("2d", { alpha: false }); // GPU Acceleration
         const frameCount = 300;
@@ -394,6 +394,7 @@
         
         // Elementos do Preloader
         let loadedCount = 0;
+        let hasUnlocked = false;
         const progressBar = document.getElementById('progress-bar');
         const progressText = document.getElementById('progress-text');
         const loader = document.getElementById('loader');
@@ -401,36 +402,62 @@
 
         document.body.classList.add('loading'); // Trava o scroll
 
+        function unlockScreen() {
+            if(hasUnlocked) return;
+            hasUnlocked = true;
+            setTimeout(() => {
+                loader.classList.add('hidden');
+                mainContent.style.opacity = '1';
+                document.body.classList.remove('loading');
+                resizeCanvas(); // Força o redimensionamento inicial
+            }, 400);
+        }
+
         function checkAllLoaded() {
             loadedCount++;
             const percent = Math.floor((loadedCount / frameCount) * 100);
             progressBar.style.width = percent + '%';
             progressText.innerText = percent + '%';
 
-            if (loadedCount === frameCount) {
-                // Remove o preloader e revela o conteúdo
-                setTimeout(() => {
-                    loader.classList.add('hidden');
-                    mainContent.style.opacity = '1';
-                    document.body.classList.remove('loading');
-                    resizeCanvas(); // Força o redimensionamento e o primeiro desenho do canvas de acordo com o scroll atual
-                }, 400);
+            if (loadedCount >= frameCount) {
+                unlockScreen();
             }
         }
 
-        // Pré-carrega estritamente as imagens
-        for (let i = 1; i <= frameCount; i++) {
-            const img = new Image();
-            img.src = currentFrame(i);
-            img.onload = () => {
-                images[i - 1] = img;
-                checkAllLoaded();
-            };
-            img.onerror = () => {
-                images[i - 1] = null; // Falha segura
-                checkAllLoaded();
-            };
+        // Failsafe de 12 segundos: se a conexão cair ou travar, libera o acesso ao site de qualquer forma
+        setTimeout(unlockScreen, 12000);
+
+        // Carregamento inteligente em Lotes (Batches) para não asfixiar conexões 3G/4G no mobile
+        let currentLoadIndex = 1;
+        function loadNextBatch() {
+            const batchSize = 25; // 25 fotos por vez
+            let loadedInBatch = 0;
+            const start = currentLoadIndex;
+            const end = Math.min(frameCount, currentLoadIndex + batchSize - 1);
+            
+            if (start > frameCount) return;
+
+            for (let i = start; i <= end; i++) {
+                const img = new Image();
+                img.src = currentFrame(i);
+                
+                const onComplete = () => {
+                    images[i - 1] = img;
+                    loadedInBatch++;
+                    checkAllLoaded();
+                    // Quando o lote atual terminar, puxa o próximo
+                    if (loadedInBatch === (end - start + 1)) {
+                        currentLoadIndex = end + 1;
+                        loadNextBatch();
+                    }
+                };
+
+                img.onload = onComplete;
+                img.onerror = () => { images[i - 1] = null; onComplete(); }; // Marca falhas mas não trava
+            }
         }
+        
+        loadNextBatch(); // Inicia o download
 
         // Desenha a imagem preenchendo o canvas (object-fit: cover behavior)
         function drawImageScaled(img) {
@@ -440,41 +467,77 @@
             const centerShift_x = (canvas.width - img.width * ratio) / 2;
             const centerShift_y = (canvas.height - img.height * ratio) / 2;
             
-            // clearRect opcional, mas evita bugs residuais de redimensionamento
+            // clearRect previne rastros e garante fundo preto onde a imagem não alcança
             context.clearRect(0, 0, canvas.width, canvas.height);
             context.drawImage(img, 0, 0, img.width, img.height,
                 centerShift_x, centerShift_y, img.width * ratio, img.height * ratio);
         }
 
+        let lastWidth = 0;
+        let lastHeight = 0;
+
         function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
+            // Ignora pequenas mudanças de altura no mobile (barra de URL) que apagam o canvas atoa
+            const widthChanged = window.innerWidth !== lastWidth;
+            const heightChanged = Math.abs(window.innerHeight - lastHeight) > 100;
+            
+            if (widthChanged || heightChanged || canvas.width === 0) {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+                lastWidth = window.innerWidth;
+                lastHeight = window.innerHeight;
+            }
             updateCanvasFrame();
         }
+        
+        // Inicializa as dimensões e os listeners
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
         window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
 
         let isTicking = false;
         function updateCanvasFrame() {
             if (!isTicking) {
                 window.requestAnimationFrame(() => {
-                    const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
-                    const maxScrollTop = document.documentElement.scrollHeight - window.innerHeight;
+                    const scrollTop = window.scrollY || document.documentElement.scrollTop;
+                    const docHeight = Math.max(
+                        document.body.scrollHeight, document.documentElement.scrollHeight,
+                        document.body.offsetHeight, document.documentElement.offsetHeight,
+                        document.body.clientHeight, document.documentElement.clientHeight
+                    );
+                    const maxScrollTop = docHeight - window.innerHeight;
                     
+                    let frameIndex = 0;
                     if (maxScrollTop > 0) {
                         const scrollFraction = Math.max(0, Math.min(1, scrollTop / maxScrollTop));
-                        const frameIndex = Math.min(frameCount - 1, Math.floor(scrollFraction * frameCount));
-                        
-                        // Encontra a imagem mais próxima carregada caso a exata não esteja pronta
-                        let targetFrame = frameIndex;
-                        while (targetFrame >= 0 && (!images[targetFrame] || !images[targetFrame].complete)) {
-                            targetFrame--; // Volta os frames até achar o último carregado
-                        }
-                        
-                        if (targetFrame >= 0) {
-                            drawImageScaled(images[targetFrame]);
+                        frameIndex = Math.floor(scrollFraction * (frameCount - 1));
+                    }
+                    
+                    // Tratamento à prova de falhas: busca o frame exato, se quebrado, volta. Se não achar, vai pra frente.
+                    let targetFrame = isNaN(frameIndex) ? 0 : frameIndex;
+                    let imgToDraw = null;
+                    
+                    // Busca para trás
+                    for(let i = targetFrame; i >= 0; i--) {
+                        if (images[i] && images[i].complete && images[i].naturalWidth > 0) {
+                            imgToDraw = images[i];
+                            break;
                         }
                     }
+                    // Se falhou, busca para frente (caso o início da array esteja quebrado)
+                    if (!imgToDraw) {
+                        for(let i = targetFrame + 1; i < frameCount; i++) {
+                            if (images[i] && images[i].complete && images[i].naturalWidth > 0) {
+                                imgToDraw = images[i];
+                                break;
+                            }
+                        }
+                    }
+                    
+                    if (imgToDraw) {
+                        drawImageScaled(imgToDraw);
+                    }
+                    
                     isTicking = false;
                 });
                 isTicking = true;
